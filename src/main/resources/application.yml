@@ -1,0 +1,4 @@
+spring.application.name=colab-task-management
+server.servlet.context-path=/api/v1
+jwt.expirationTime=3600000
+jwt.secret=5Yv2MLgAnbP8zJgQrPxIH5eCB8obJbKDyYcBF+06nUY=
