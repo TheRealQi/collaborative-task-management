@@ -1,4 +1,4 @@
 package com.q.colabtaskmanagement.exception;
 
-public class JwtAuthenticationException {
+public class ExceptionResponse {
 }
