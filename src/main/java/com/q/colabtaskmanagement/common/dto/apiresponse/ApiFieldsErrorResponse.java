@@ -1,5 +1,5 @@
 package com.q.colabtaskmanagement.common.dto.apiresponse;
-import com.q.colabtaskmanagement.common.dto.apiresponse.ErrorDTO;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,11 +11,12 @@ import java.util.List;
 
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class FormErrorResponse {
-    private HttpStatus status;
-    private String message;
-    private LocalDateTime timestamp;
-    private List<FieldErrorDTO> details;
+public class ApiFormErrorResponse extends ApiErrorResponse {
+    private List<FieldErrorDTO> errors;
+
+    public ApiFormErrorResponse(HttpStatus status, String message, String errorCode, List<FieldErrorDTO> errors) {
+        super(status, errorCode, message);
+        this.errors = errors;
+    }
 }
