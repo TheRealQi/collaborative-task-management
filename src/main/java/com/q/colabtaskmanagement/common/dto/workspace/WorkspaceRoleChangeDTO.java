@@ -11,9 +11,6 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class WorkspaceRoleChangeDTO {
-    @NotNull(message = "Workspace ID is required")
-    private UUID workspaceId;
-
     @NotNull(message = "User ID is required")
     private UUID userId;
 

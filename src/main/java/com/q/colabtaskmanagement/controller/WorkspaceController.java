@@ -1,9 +1,7 @@
 package com.q.colabtaskmanagement.controller;
 
 import com.q.colabtaskmanagement.common.dto.apiresponse.ApiSuccessResponse;
-import com.q.colabtaskmanagement.common.dto.workspace.WorkspaceCreationDTO;
-import com.q.colabtaskmanagement.common.dto.workspace.WorkspaceDTO;
-import com.q.colabtaskmanagement.common.dto.workspace.WorkspaceEditDTO;
+import com.q.colabtaskmanagement.common.dto.workspace.*;
 import com.q.colabtaskmanagement.security.model.CustomUserDetails;
 import com.q.colabtaskmanagement.service.WorkspaceService;
 import com.q.colabtaskmanagement.service.WorkspaceServiceImpl;
@@ -72,6 +70,70 @@ public class WorkspaceController {
         WorkspaceDTO workspaceDTO = workspaceService.editWorkspace(workspaceId, workspaceEditDTO, currentUser.getUser());
         ApiSuccessResponse<WorkspaceDTO> apiResponse =
                 new ApiSuccessResponse<>(true, "Workspace edited successfully", workspaceDTO, null);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @DeleteMapping("/{workspaceId}")
+    public ResponseEntity<ApiSuccessResponse<Void>> deleteWorkspace(
+            @PathVariable UUID workspaceId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+        workspaceService.deleteWorkspaceById(workspaceId, currentUser.getUser());
+        ApiSuccessResponse<Void> apiResponse =
+                new ApiSuccessResponse<>(true, "Workspace deleted successfully", null, null);
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @GetMapping("/{workspaceId}/members")
+    public ResponseEntity<ApiSuccessResponse<List<WorkspaceMembersDTO>>> getWorkspaceMembers(
+            @PathVariable UUID workspaceId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+
+        List<WorkspaceMembersDTO> members = workspaceService.getWorkspaceMembers(workspaceId, currentUser.getUser());
+
+        ApiSuccessResponse<List<WorkspaceMembersDTO>> apiResponse =
+                new ApiSuccessResponse<>(true, "Workspace members fetched successfully", members, null);
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @DeleteMapping("/{workspaceId}/members/{userId}")
+    public ResponseEntity<ApiSuccessResponse<Void>> removeWorkspaceMember(
+            @PathVariable UUID workspaceId,
+            @PathVariable UUID userId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+
+        workspaceService.removeMember(workspaceId, userId, currentUser.getUser());
+
+        ApiSuccessResponse<Void> apiResponse =
+                new ApiSuccessResponse<>(true, "Member removed successfully", null, null);
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @PutMapping("/{workspaceId}/members/{userId}/role")
+    public ResponseEntity<ApiSuccessResponse<Void>> changeMemberRole(
+            @PathVariable UUID workspaceId,
+            @RequestBody WorkspaceRoleChangeDTO roleChangeDTO,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+
+        workspaceService.changeMemberRole(workspaceId, roleChangeDTO, currentUser.getUser());
+
+        ApiSuccessResponse<Void> apiResponse =
+                new ApiSuccessResponse<>(true, "Member role changed successfully", null, null);
+
+        return ResponseEntity.ok(apiResponse);
+    }
+
+    @DeleteMapping("/{workspaceId}/leave")
+    public ResponseEntity<ApiSuccessResponse<Void>> leaveWorkspace(
+            @PathVariable UUID workspaceId,
+            @AuthenticationPrincipal CustomUserDetails currentUser) {
+
+        workspaceService.leaveWorkspace(workspaceId, currentUser.getUser());
+
+        ApiSuccessResponse<Void> apiResponse =
+                new ApiSuccessResponse<>(true, "Left workspace successfully", null, null);
+
         return ResponseEntity.ok(apiResponse);
     }
 }

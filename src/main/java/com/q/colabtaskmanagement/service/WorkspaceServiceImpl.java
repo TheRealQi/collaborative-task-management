@@ -72,43 +72,126 @@ public class WorkspaceServiceImpl implements WorkspaceService {
                 .toList();
     }
 
+    private record RoleCheckResult(boolean isAdmin, WorkspaceRole role) {
+    }
+
+    private RoleCheckResult checkUserRole(UUID workspaceId, UUID userId, WorkspaceRole... allowedRoles) {
+        return workspaceMemberRepository.findById(new WorkspaceMemberId(workspaceId, userId))
+                .map(member -> {
+                    boolean hasAccess = Arrays.asList(allowedRoles).contains(member.getRole());
+                    return new RoleCheckResult(hasAccess, member.getRole());
+                })
+                .orElse(new RoleCheckResult(false, null));
+    }
+
     @Override
     @Transactional
     public WorkspaceDTO editWorkspace(UUID workspaceId, WorkspaceEditDTO workspaceEditDTO, User_ user) {
-        WorkspaceMember member = workspaceMemberRepository.findById(new WorkspaceMemberId(workspaceId, user.getId())).orElseThrow(() -> new ForbiddenException("You do not have access to this workspace."));
-        if (member.getRole() != WorkspaceRole.ADMIN) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+        RoleCheckResult result = checkUserRole(workspaceId, user.getId(), WorkspaceRole.ADMIN);
+        if (!result.isAdmin) {
             throw new ForbiddenException("Only admins can edit the workspace.");
         }
-        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
         workspace.setTitle(workspaceEditDTO.getTitle());
         workspace.setDescription(workspaceEditDTO.getDescription());
         workspaceRepository.save(workspace);
-        return new WorkspaceDTO(workspace.getId(), workspace.getTitle(), workspace.getDescription(), member.getRole());
+        return new WorkspaceDTO(workspace.getId(), workspace.getTitle(), workspace.getDescription(), result.role);
+    }
+
+    @Override
+    public void deleteWorkspaceById(UUID workspaceId, User_ user) {
+        Workspace workspace = workspaceRepository.findById(workspaceId).orElseThrow(() -> new ResourceNotFoundException("Workspace not found"));
+        RoleCheckResult result = checkUserRole(workspaceId, user.getId(), WorkspaceRole.ADMIN);
+        if (!result.isAdmin) {
+            throw new ForbiddenException("Only admins can delete the workspace.");
+        }
+        workspaceRepository.delete(workspace);
     }
 
 
     @Override
-    public void deleteWorkspaceById(UUID workspaceId) {
+    public List<WorkspaceMembersDTO> getWorkspaceMembers(UUID workspaceId, User_ user) {
+        boolean exists = workspaceRepository.existsById(workspaceId);
+        if (!exists) {
+            throw new ResourceNotFoundException("Workspace not found");
+        }
+        RoleCheckResult result = checkUserRole(workspaceId, user.getId(), WorkspaceRole.ADMIN, WorkspaceRole.MEMBER);
+        if (result.role == null) {
+            throw new ForbiddenException("You do not have access to this workspace.");
+        }
+        if (result.role != WorkspaceRole.ADMIN && result.role != WorkspaceRole.MEMBER) {
+            throw new ForbiddenException("You do not have access to view members of this workspace.");
+        }
+        List<WorkspaceMember> members = workspaceMemberRepository.findByIdWorkspaceId(workspaceId);
 
+        return members.stream()
+                .map(member -> new WorkspaceMembersDTO(
+                        member.getUser().getId(),
+                        member.getUser().getName(),
+                        member.getUser().getUsername(),
+                        member.getRole()
+                ))
+                .toList();
     }
 
     @Override
-    public List<WorkspaceMembersDTO> getWorkspaceMembers(UUID workspaceId) {
-        return List.of();
+    public void removeMember(UUID workspaceID, UUID userId, User_ user) {
+        boolean exists = workspaceRepository.existsById(workspaceID);
+        if (!exists) {
+            throw new ResourceNotFoundException("Workspace not found");
+        }
+        RoleCheckResult result = checkUserRole(workspaceID, user.getId(), WorkspaceRole.ADMIN);
+        if (!result.isAdmin) {
+            throw new ForbiddenException("You do not have permission to remove members.");
+        }
+        if (userId.equals(user.getId())) {
+            throw new ForbiddenException("Admins cannot remove themselves.");
+        }
+        WorkspaceMemberId memberId = new WorkspaceMemberId(userId, workspaceID);
+        WorkspaceMember member = workspaceMemberRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("Member not found in this workspace."));
+        workspaceMemberRepository.delete(member);
     }
 
     @Override
-    public void removeMember(UUID workspaceID, UUID userId) {
-
+    public void changeMemberRole(UUID workspaceId, WorkspaceRoleChangeDTO workspaceRoleChangeDTO, User_ user) {
+        boolean exists = workspaceRepository.existsById(workspaceId);
+        if (!exists) {
+            throw new ResourceNotFoundException("Workspace not found");
+        }
+        RoleCheckResult result = checkUserRole(workspaceId, user.getId(), WorkspaceRole.ADMIN);
+        if (!result.isAdmin) {
+            throw new ForbiddenException("You do not have permission to change members roles.");
+        }
+        UUID userId = workspaceRoleChangeDTO.getUserId();
+        if (userId.equals(user.getId())) {
+            throw new ForbiddenException("Admins cannot change their own role.");
+        }
+        WorkspaceMemberId memberId = new WorkspaceMemberId(userId, workspaceId);
+        WorkspaceMember member = workspaceMemberRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("Member not found in this workspace."));
+        member.setRole(workspaceRoleChangeDTO.getNewRole());
+        workspaceMemberRepository.save(member);
     }
 
     @Override
-    public void changeMemberRole(WorkspaceRoleChangeDTO workspaceRoleChangeDTO) {
-
+    public void leaveWorkspace(UUID workspaceId, User_ user) {
+        boolean exists = workspaceRepository.existsById(workspaceId);
+        if (!exists) {
+            throw new ResourceNotFoundException("Workspace not found");
+        }
+        RoleCheckResult result = checkUserRole(workspaceId, user.getId(), WorkspaceRole.ADMIN, WorkspaceRole.MEMBER);
+        if (result.role == null) {
+            throw new ForbiddenException("You do not have access to this workspace.");
+        }
+        if (result.isAdmin) {
+            long adminCount = workspaceMemberRepository.countByIdWorkspaceIdAndRole(workspaceId, WorkspaceRole.ADMIN);
+            if (adminCount <= 1) {
+                throw new ForbiddenException("You are the last admin.");
+            }
+        }
+        WorkspaceMemberId memberId = new WorkspaceMemberId(user.getId(), workspaceId);
+        WorkspaceMember member = workspaceMemberRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("You are not a member of this workspace."));
+        workspaceMemberRepository.delete(member);
     }
 
-    @Override
-    public WorkspaceRole getUserRoleInWorkspace(UUID workspaceId) {
-        return null;
-    }
+
 }

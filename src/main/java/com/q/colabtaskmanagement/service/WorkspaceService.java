@@ -18,16 +18,16 @@ public interface WorkspaceService {
 
     WorkspaceDTO editWorkspace(UUID workspaceId, WorkspaceEditDTO workspaceEditDTO, User_ user);
 
-    void deleteWorkspaceById(UUID workspaceId);
+    void deleteWorkspaceById(UUID workspaceId, User_ user);
 
     // Members & Roles
-    List<WorkspaceMembersDTO> getWorkspaceMembers(UUID workspaceId);
+    List<WorkspaceMembersDTO> getWorkspaceMembers(UUID workspaceId, User_ user);
 
 //    void inviteMember();
 
-    void removeMember(UUID workspaceID, UUID userId);
+    void removeMember(UUID workspaceID, UUID userId, User_ user);
 
-    void changeMemberRole(WorkspaceRoleChangeDTO workspaceRoleChangeDTO);
+    void changeMemberRole(UUID workspaceId, WorkspaceRoleChangeDTO workspaceRoleChangeDTO, User_ user);
 
-    WorkspaceRole getUserRoleInWorkspace(UUID workspaceId);
+    void leaveWorkspace(UUID workspaceId, User_ user);
 }
