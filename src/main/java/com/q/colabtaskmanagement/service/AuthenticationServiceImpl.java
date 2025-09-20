@@ -5,20 +5,26 @@ import com.q.colabtaskmanagement.common.dto.authentication.LoginResponseDTO;
 import com.q.colabtaskmanagement.common.dto.authentication.RegisterationRequestDTO;
 import com.q.colabtaskmanagement.dataaccess.model.User_;
 import com.q.colabtaskmanagement.dataaccess.repository.UserRepository;
+import com.q.colabtaskmanagement.exception.FormConflictException;
+import com.q.colabtaskmanagement.exception.UnauthorizedException;
 import com.q.colabtaskmanagement.security.service.JwtFilterService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.View;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
+
+import static com.q.colabtaskmanagement.common.error.ErrorMessages.EMAIL_ALREADY_EXISTS;
+import static com.q.colabtaskmanagement.common.error.ErrorMessages.USERNAME_ALREADY_EXISTS;
 
 @Service
 public class AuthenticationServiceImpl implements AuthenticationService {
@@ -40,32 +46,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public LoginResponseDTO login(LoginRequestDTO loginRequest) {
         String usernameOrEmail = loginRequest.getUsernameOrEmail();
         String password = loginRequest.getPassword();
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(usernameOrEmail, password)
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        UUID userUUID = userRepository.findUserByUsernameOrEmail(usernameOrEmail).map(User_::getId).orElseThrow(null); // TODO: Exception handling User not found
-        String jwtToken = jwtService.generateToken(userUUID);
-        LoginResponseDTO loginResponse = new LoginResponseDTO();
-        loginResponse.setAccessToken(jwtToken);
-        loginResponse.setExpiresIn(String.valueOf(jwtService.getExpirationInSeconds()));
-        loginResponse.setUserId(userUUID.toString());
+        try {
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(usernameOrEmail, password)
+            );
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            UUID userUUID = userRepository.findIdByUsernameOrEmail(usernameOrEmail);
+            String jwtToken = jwtService.generateToken(userUUID);
+            LoginResponseDTO loginResponse = new LoginResponseDTO();
+            loginResponse.setAccessToken(jwtToken);
+            loginResponse.setExpiresIn(String.valueOf(jwtService.getExpirationInSeconds()));
+            loginResponse.setUserId(userUUID.toString());
 
-        return loginResponse;
+            return loginResponse;
+        } catch (BadCredentialsException ex) {
+            throw new UnauthorizedException("Invalid username/email or password");
+        }
     }
 
     @Override
     @Transactional
-    public boolean register(RegisterationRequestDTO registerRequest) {
+    public void register(RegisterationRequestDTO registerRequest) {
         String name = registerRequest.getName();
         String username = registerRequest.getUsername();
         String email = registerRequest.getEmail();
         String password = registerRequest.getPassword();
 
+        Map<String, String> errors = new HashMap<>();
         if (userRepository.existsByUsername(username)) {
-            throw new RuntimeException("Username is already taken"); // TODO: Custom Exception
-        } else if (userRepository.existsByEmail(email)) {
-            throw new RuntimeException("Email is already taken"); // TODO: Custom Exception
+            errors.put("username", USERNAME_ALREADY_EXISTS);
+        }
+        if (userRepository.existsByEmail(email)) {
+            errors.put("email", EMAIL_ALREADY_EXISTS);
+        }
+        if (!errors.isEmpty()) {
+            throw new FormConflictException(errors);
         }
 
         User_ newUser = new User_();
@@ -74,6 +89,5 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         newUser.setEmail(email);
         newUser.setPassword(passwordEncoder.encode(password));
         userRepository.save(newUser);
-        return true;
     }
 }

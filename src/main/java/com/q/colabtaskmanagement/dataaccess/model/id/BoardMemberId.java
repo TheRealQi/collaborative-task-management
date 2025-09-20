@@ -12,7 +12,7 @@ import java.util.UUID;
 @Setter
 @Getter
 @EqualsAndHashCode
-public class WorkspaceMemberId implements Serializable {
-    private UUID workspaceId;
+public class BoardMemberId implements Serializable {
+    private UUID boardId;
     private UUID userId;
 }

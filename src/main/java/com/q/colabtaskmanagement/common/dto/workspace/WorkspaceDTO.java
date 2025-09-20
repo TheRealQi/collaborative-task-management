@@ -1,5 +1,6 @@
 package com.q.colabtaskmanagement.common.dto.workspace;
 
+import com.q.colabtaskmanagement.common.enums.WorkspaceRole;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -14,5 +15,6 @@ import java.util.UUID;
 public class WorkspaceDTO {
     private UUID workspaceId;
     private String title;
-    private String userRole;
+    private String description;
+    private WorkspaceRole workspaceRole;
 }

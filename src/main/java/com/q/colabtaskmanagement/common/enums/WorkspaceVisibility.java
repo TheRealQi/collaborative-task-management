@@ -1,4 +1,6 @@
 package com.q.colabtaskmanagement.common.enums;
 
-public enum WorkSpaceVisibility {
+public enum WorkspaceVisibility {
+    PRIVATE,
+    PUBLIC
 }

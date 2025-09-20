@@ -6,5 +6,5 @@ import com.q.colabtaskmanagement.common.dto.authentication.RegisterationRequestD
 
 public interface AuthenticationService {
     public LoginResponseDTO login(LoginRequestDTO loginRequest);
-    public boolean register(RegisterationRequestDTO registerRequest);
+    public void register(RegisterationRequestDTO registerRequest);
 }

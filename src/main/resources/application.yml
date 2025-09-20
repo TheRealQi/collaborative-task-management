@@ -1,4 +1,28 @@
-spring.application.name=colab-task-management
-server.servlet.context-path=/api/v1
-jwt.expirationTime=3600000
-jwt.secret=5Yv2MLgAnbP8zJgQrPxIH5eCB8obJbKDyYcBF+06nUY=
+spring:
+  application:
+    name: collaborative-task-management
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/CollaborativeTaskManagement
+    username: postgres
+    password: 1582001
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+
+server:
+  servlet:
+    context-path: /api/v1
+  port: 8081
+
+jwt:
+  secret: 5Yv2MLgAnbP8zJgQrPxIH5eCB8obJbKDyYcBF+06nUY=
+  expiration: 900000

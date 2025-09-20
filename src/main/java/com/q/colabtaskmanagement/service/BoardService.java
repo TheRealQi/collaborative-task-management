@@ -1,4 +1,5 @@
 package com.q.colabtaskmanagement.service;
 
-public class BoardService {
+
+public interface BoardService {
 }

@@ -1,25 +1,45 @@
 package com.q.colabtaskmanagement.security.model;
 
+import com.q.colabtaskmanagement.dataaccess.model.User_;
+import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.UUID;
 
+@NoArgsConstructor
 public class CustomUserDetails implements UserDetails {
+
+    private User_ user;
+
+    public CustomUserDetails(User_ user) {
+        this.user = user;
+    }
+
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return List.of();
+        return Collections.emptyList();
     }
 
     @Override
     public String getPassword() {
-        return "";
+        return user.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return "";
+        return user.getUsername();
+    }
+
+    public UUID getId() {
+        return user.getId();
+    }
+
+    public User_ getUser() {
+        return user;
     }
 
     @Override

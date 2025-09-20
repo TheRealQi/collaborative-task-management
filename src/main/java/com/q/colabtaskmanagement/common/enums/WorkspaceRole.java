@@ -1,4 +1,7 @@
 package com.q.colabtaskmanagement.common.enums;
 
-public enum WorkSpaceRole {
+public enum WorkspaceRole {
+    ADMIN,
+    MEMBER,
+    GUEST
 }

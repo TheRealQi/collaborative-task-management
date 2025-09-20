@@ -7,10 +7,10 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@AllArgsConstructor
 @NoArgsConstructor
-public class ApiError {
+@AllArgsConstructor
+public class ApiErrorResponse {
+    private boolean success = false;
     private String type;
-    private String code;
     private String message;
 }
