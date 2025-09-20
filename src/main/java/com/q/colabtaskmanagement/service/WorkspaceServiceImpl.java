@@ -4,8 +4,11 @@ import com.q.colabtaskmanagement.common.dto.workspace.*;
 import com.q.colabtaskmanagement.common.enums.WorkspaceRole;
 import com.q.colabtaskmanagement.dataaccess.model.User_;
 import com.q.colabtaskmanagement.dataaccess.model.Workspace;
+import com.q.colabtaskmanagement.dataaccess.model.WorkspaceInvites;
 import com.q.colabtaskmanagement.dataaccess.model.WorkspaceMember;
 import com.q.colabtaskmanagement.dataaccess.model.id.WorkspaceMemberId;
+import com.q.colabtaskmanagement.dataaccess.repository.InvitesRepository;
+import com.q.colabtaskmanagement.dataaccess.repository.UserRepository;
 import com.q.colabtaskmanagement.dataaccess.repository.WorkspaceMemberRepository;
 import com.q.colabtaskmanagement.dataaccess.repository.WorkspaceRepository;
 import com.q.colabtaskmanagement.exception.ForbiddenException;
@@ -15,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -22,11 +26,15 @@ public class WorkspaceServiceImpl implements WorkspaceService {
 
     private final WorkspaceRepository workspaceRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
+    private final UserRepository userRepository;
+    private final InvitesRepository invitesRepository;
 
     @Autowired
-    public WorkspaceServiceImpl(WorkspaceRepository workspaceRepository, WorkspaceMemberRepository workspaceMemberRepository) {
+    public WorkspaceServiceImpl(WorkspaceRepository workspaceRepository, WorkspaceMemberRepository workspaceMemberRepository, UserRepository userRepository, InvitesRepository invitesRepository) {
         this.workspaceRepository = workspaceRepository;
         this.workspaceMemberRepository = workspaceMemberRepository;
+        this.userRepository = userRepository;
+        this.invitesRepository = invitesRepository;
     }
 
     @Transactional
@@ -135,6 +143,57 @@ public class WorkspaceServiceImpl implements WorkspaceService {
     }
 
     @Override
+    @Transactional
+    public void inviteMember(UUID workspaceId, String usernameOrEmail, User_ user) {
+        User_ invitee = userRepository.findUserByUsernameOrEmail(usernameOrEmail).orElseThrow(() -> new ResourceNotFoundException("User with that username/email not found"));
+        if (invitee.getId().equals(user.getId())) {
+            throw new IllegalArgumentException("You cannot invite yourself");
+        }
+        boolean isMember = workspaceMemberRepository.existsByIdUserIdAndWorkspaceIdAndRoleIn(invitee.getId(), workspaceId, List.of(WorkspaceRole.ADMIN, WorkspaceRole.MEMBER));
+        if (isMember) {
+            throw new IllegalArgumentException("User is already a member of this workspace");
+        }
+        boolean isInvited = invitesRepository.existsByWorkspaceIdAndUserIdAndAcceptedIsTrue(workspaceId, invitee.getId());
+        if (isInvited) {
+            throw new IllegalArgumentException("User has already been invited to this workspace");
+        }
+        RoleCheckResult result = checkUserRole(workspaceId, user.getId(), WorkspaceRole.ADMIN);
+        if (!result.isAdmin) {
+            throw new ForbiddenException("You do not have permission to invite members.");
+        }
+        WorkspaceInvites invite = new WorkspaceInvites();
+        invite.setWorkspaceId(workspaceId);
+        invite.setUserId(invitee.getId());
+        invitesRepository.save(invite);
+
+        System.out.println("Invite sent to user: " + invitee.getUsername());
+    }
+
+    @Override
+    @Transactional
+    public void acceptInvite(UUID workspaceId, User_ user) {
+        WorkspaceInvites invite = invitesRepository.findByWorkspaceIdAndUserIdAndAcceptedIsFalse(workspaceId, user.getId()).orElseThrow(() -> new ResourceNotFoundException("No pending invite found for this workspace."));
+        boolean isMember = workspaceMemberRepository.existsByIdUserIdAndWorkspaceIdAndRoleIn(user.getId(), workspaceId, List.of(WorkspaceRole.ADMIN, WorkspaceRole.MEMBER));
+        if (isMember) {
+            throw new IllegalArgumentException("You are already a member of this workspace");
+        }
+        if (invite.getExpiresAt() != null && invite.getExpiresAt().isBefore(LocalDateTime.now())) {
+            invite.setExpired(true);
+            invitesRepository.save(invite);
+            throw new IllegalArgumentException("This invite has expired.");
+        }
+        invite.setAccepted(true);
+        invitesRepository.save(invite);
+
+        WorkspaceMember member = new WorkspaceMember();
+        member.setId(new WorkspaceMemberId(user.getId(), workspaceId));
+        member.setUser(user);
+        member.setWorkspace(workspaceRepository.findById(workspaceId).orElseThrow(() -> new ResourceNotFoundException("Workspace not found")));
+        member.setRole(WorkspaceRole.MEMBER);
+        workspaceMemberRepository.save(member);
+    }
+
+    @Override
     public void removeMember(UUID workspaceID, UUID userId, User_ user) {
         boolean exists = workspaceRepository.existsById(workspaceID);
         if (!exists) {
@@ -170,6 +229,7 @@ public class WorkspaceServiceImpl implements WorkspaceService {
         WorkspaceMember member = workspaceMemberRepository.findById(memberId).orElseThrow(() -> new ResourceNotFoundException("Member not found in this workspace."));
         member.setRole(workspaceRoleChangeDTO.getNewRole());
         workspaceMemberRepository.save(member);
+
     }
 
     @Override

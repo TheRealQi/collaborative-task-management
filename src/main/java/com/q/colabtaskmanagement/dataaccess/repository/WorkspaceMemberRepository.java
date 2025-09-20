@@ -14,9 +14,8 @@ import java.util.UUID;
 
 @Repository
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, WorkspaceMemberId> {
-    boolean existsByUserIdAndWorkspaceId(UUID userId, UUID workspaceId);
 
-    boolean existsByUserIdAndWorkspaceIdAndRole(UUID userId, UUID workspaceId, WorkspaceRole role);
+    boolean existsByIdUserIdAndWorkspaceIdAndRoleIn(UUID userId, UUID workspaceId, List<WorkspaceRole> roles);
 
     List<WorkspaceMember> findByUser(User_ user);
 

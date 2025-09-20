@@ -24,7 +24,7 @@ public class Workspace extends BaseEntity {
     private String description;
 
     @Enumerated(EnumType.STRING)
-    private WorkspaceVisibility visibility;
+    private WorkspaceVisibility visibility = WorkspaceVisibility.PRIVATE;
 
     @OneToMany(mappedBy = "workspace", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Board> boards = new ArrayList<>();

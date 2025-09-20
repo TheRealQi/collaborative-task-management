@@ -23,7 +23,9 @@ public interface WorkspaceService {
     // Members & Roles
     List<WorkspaceMembersDTO> getWorkspaceMembers(UUID workspaceId, User_ user);
 
-//    void inviteMember();
+    void inviteMember(UUID workspaceId, String usernameOrEmail, User_ user);
+
+    void acceptInvite(UUID workspaceId, User_ user);
 
     void removeMember(UUID workspaceID, UUID userId, User_ user);
 
