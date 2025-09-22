@@ -12,7 +12,7 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class WorkspaceMembersDTO {
+public class WorkspaceMemberDTO {
     private UUID userId;
     private String name;
     private String username;

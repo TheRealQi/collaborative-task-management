@@ -1,16 +1,16 @@
-package com.q.colabtaskmanagement.dataaccess.model;
+package com.q.colabtaskmanagement.dataaccess.model.sql;
 
-import com.q.colabtaskmanagement.common.enums.WorkspaceRole;
 import jakarta.persistence.*;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
 @Entity
 @Data
-public class WorkspaceInvites {
+public class WorkspaceInvite {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private UUID id;
@@ -20,8 +20,9 @@ public class WorkspaceInvites {
     private UUID userId;
 
     @CreationTimestamp
-    private LocalDateTime invitedAt = LocalDateTime.now();
-    private LocalDateTime expiresAt = LocalDateTime.now().plusDays(7);
+    private Instant invitedAt = Instant.now();
+
+    private Instant expiresAt;
 
     private boolean accepted = false;
     private boolean expired = false;
@@ -29,7 +30,7 @@ public class WorkspaceInvites {
     @PrePersist
     public void prePersist() {
         if (expiresAt == null) {
-            expiresAt = LocalDateTime.now().plusDays(7);
+            expiresAt = Instant.now().plus(7, ChronoUnit.DAYS);
         }
     }
 }
