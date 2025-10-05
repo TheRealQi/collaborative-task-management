@@ -3,15 +3,17 @@ spring:
     name: collaborative-task-management
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/CollaborativeTaskManagement
-    username: postgres
-    password: 1582001
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
   jpa:
     show-sql: true
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
       dialect: org.hibernate.dialect.PostgreSQLDialect
-
+  data:
+    mongodb:
+        uri: mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@${MONGO_HOST}/${MONGO_DATABASE}
 logging:
   level:
     org:
@@ -21,8 +23,8 @@ logging:
 server:
   servlet:
     context-path: /api/v1
-  port: 8081
+  port: ${SERVER_PORT}
 
 jwt:
-  secret: 5Yv2MLgAnbP8zJgQrPxIH5eCB8obJbKDyYcBF+06nUY=
-  expiration: 900000
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION}

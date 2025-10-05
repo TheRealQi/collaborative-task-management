@@ -1,19 +1,17 @@
-package com.q.colabtaskmanagement.dataaccess.model;
+package com.q.colabtaskmanagement.dataaccess.model.sql;
 
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-@Setter
-@Getter
-@ToString
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 @Entity
+@Table(name = "users")
 public class User_ extends BaseEntity {
     @Column(name = "name", nullable = false)
     private String name;
@@ -29,7 +27,7 @@ public class User_ extends BaseEntity {
     private String password;
 
     @Column(name = "last_login")
-    private LocalDateTime lastLogin;
+    private Instant lastLogin;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<WorkspaceMember> workspaceMembers = new ArrayList<>();

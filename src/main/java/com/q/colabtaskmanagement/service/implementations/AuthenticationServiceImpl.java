@@ -1,13 +1,14 @@
-package com.q.colabtaskmanagement.service;
+package com.q.colabtaskmanagement.service.implementations;
 
 import com.q.colabtaskmanagement.common.dto.authentication.LoginRequestDTO;
 import com.q.colabtaskmanagement.common.dto.authentication.LoginResponseDTO;
 import com.q.colabtaskmanagement.common.dto.authentication.RegisterationRequestDTO;
-import com.q.colabtaskmanagement.dataaccess.model.User_;
-import com.q.colabtaskmanagement.dataaccess.repository.UserRepository;
+import com.q.colabtaskmanagement.dataaccess.model.sql.User_;
+import com.q.colabtaskmanagement.dataaccess.repository.sql.UserRepository;
 import com.q.colabtaskmanagement.exception.FormConflictException;
 import com.q.colabtaskmanagement.exception.UnauthorizedException;
 import com.q.colabtaskmanagement.security.service.JwtFilterService;
+import com.q.colabtaskmanagement.service.interfaces.AuthenticationService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -17,7 +18,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.View;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -51,7 +51,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                     new UsernamePasswordAuthenticationToken(usernameOrEmail, password)
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            UUID userUUID = userRepository.findIdByUsernameOrEmail(usernameOrEmail);
+            UUID userUUID = userRepository.findIdByUsernameOrEmail(usernameOrEmail).orElseThrow(() -> new UnauthorizedException("Invalid username/email or password"));
             String jwtToken = jwtService.generateToken(userUUID);
             LoginResponseDTO loginResponse = new LoginResponseDTO();
             loginResponse.setAccessToken(jwtToken);

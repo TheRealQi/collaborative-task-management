@@ -13,7 +13,7 @@ public class ApiFieldsErrorResponse extends ApiErrorResponse {
     private List<FieldErrorDTO> errors;
 
     public ApiFieldsErrorResponse(String message, String errorCode, List<FieldErrorDTO> errors) {
-        super(false, errorCode, message);  // success = false
+        super(false, errorCode, message);
         this.errors = errors;
     }
 }

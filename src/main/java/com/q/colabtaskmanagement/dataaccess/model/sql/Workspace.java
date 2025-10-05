@@ -1,4 +1,4 @@
-package com.q.colabtaskmanagement.dataaccess.model;
+package com.q.colabtaskmanagement.dataaccess.model.sql;
 
 import com.q.colabtaskmanagement.common.enums.WorkspaceVisibility;
 import jakarta.persistence.*;
@@ -10,12 +10,9 @@ import java.util.List;
 import java.util.Set;
 
 @Entity
+@Data
 @EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-@Setter
-@Getter
-@ToString
 @NoArgsConstructor
-@AllArgsConstructor
 public class Workspace extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;

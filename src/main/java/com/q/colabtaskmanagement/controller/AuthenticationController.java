@@ -4,7 +4,7 @@ import com.q.colabtaskmanagement.common.dto.apiresponse.ApiSuccessResponse;
 import com.q.colabtaskmanagement.common.dto.authentication.LoginRequestDTO;
 import com.q.colabtaskmanagement.common.dto.authentication.LoginResponseDTO;
 import com.q.colabtaskmanagement.common.dto.authentication.RegisterationRequestDTO;
-import com.q.colabtaskmanagement.service.AuthenticationService;
+import com.q.colabtaskmanagement.service.interfaces.AuthenticationService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

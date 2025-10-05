@@ -1,13 +1,12 @@
 package com.q.colabtaskmanagement.security.model;
 
-import com.q.colabtaskmanagement.dataaccess.model.User_;
+import com.q.colabtaskmanagement.dataaccess.model.sql.User_;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
 
 @NoArgsConstructor

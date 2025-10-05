@@ -1,4 +1,4 @@
-package com.q.colabtaskmanagement.dataaccess.model;
+package com.q.colabtaskmanagement.dataaccess.model.sql;
 
 import com.q.colabtaskmanagement.common.enums.BoardVisibility;
 import jakarta.persistence.*;
@@ -8,12 +8,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
-@Setter
-@Getter
-@ToString
+@Data
 @NoArgsConstructor
-@AllArgsConstructor
+@EqualsAndHashCode(callSuper = true, onlyExplicitlyIncluded = true)
 public class Board extends BaseEntity {
     @Column(name = "title", nullable = false)
     private String title;
@@ -24,7 +21,7 @@ public class Board extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private BoardVisibility visibility;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "workspace_id", nullable = false)
     private Workspace workspace;
 

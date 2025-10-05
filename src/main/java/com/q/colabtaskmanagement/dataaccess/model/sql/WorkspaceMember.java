@@ -1,4 +1,4 @@
-package com.q.colabtaskmanagement.dataaccess.model;
+package com.q.colabtaskmanagement.dataaccess.model.sql;
 
 import com.q.colabtaskmanagement.common.enums.WorkspaceRole;
 import com.q.colabtaskmanagement.dataaccess.model.id.WorkspaceMemberId;
@@ -7,7 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 
 @Entity
@@ -26,11 +26,11 @@ public class WorkspaceMember {
 
     @CreationTimestamp
     @Column(name = "joined_at", updatable = false)
-    private LocalDateTime joinedAt;
+    private Instant joinedAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private Instant updatedAt;
 
     @ManyToOne
     @MapsId("workspaceId")

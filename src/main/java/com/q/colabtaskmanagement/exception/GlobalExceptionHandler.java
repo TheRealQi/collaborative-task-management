@@ -8,10 +8,12 @@ import com.q.colabtaskmanagement.common.error.ErrorMessages;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -119,6 +121,17 @@ public class GlobalExceptionHandler {
                 ex.getMessage()
         );
         return ResponseEntity.status(HttpStatus.CONFLICT).body(response);
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ApiErrorResponse> handleInvalidEnum(HttpMessageNotReadableException ex) {
+        String message = "Invalid Input: " + ex.getMostSpecificCause().getMessage();
+        ApiErrorResponse response = new ApiErrorResponse(
+                false,
+                ErrorCode.BAD_REQUEST.getCode(),
+                message
+        );
+        return ResponseEntity.badRequest().body(response);
     }
 
     @ExceptionHandler({InternalServerErrorException.class, Exception.class})

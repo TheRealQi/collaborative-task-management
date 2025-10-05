@@ -1,9 +1,8 @@
 package com.q.colabtaskmanagement.security.service;
 
-import com.q.colabtaskmanagement.dataaccess.repository.UserRepository;
+import com.q.colabtaskmanagement.dataaccess.repository.sql.UserRepository;
 import com.q.colabtaskmanagement.security.model.CustomUserDetails;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -19,13 +18,13 @@ public class CustomUserDetailsServiceImpl implements CustomUserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String usernameOrEmail) throws UsernameNotFoundException {
-        return userRepository.findUserByUsernameOrEmail(usernameOrEmail)
+        return userRepository.findByUsernameOrEmail(usernameOrEmail)
                 .map(CustomUserDetails::new)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with username/email: " + usernameOrEmail));
     }
 
     public UserDetails loadUserById(UUID id) throws UsernameNotFoundException {
-        var user = userRepository.findUserById(id).orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
+        var user = userRepository.findById(id).orElseThrow(() -> new UsernameNotFoundException("User not found with id: " + id));
         return new CustomUserDetails(user);
     }
 }

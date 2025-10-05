@@ -1,4 +1,4 @@
-package com.q.colabtaskmanagement.service;
+package com.q.colabtaskmanagement.service.interfaces;
 
 import com.q.colabtaskmanagement.common.dto.authentication.LoginRequestDTO;
 import com.q.colabtaskmanagement.common.dto.authentication.LoginResponseDTO;

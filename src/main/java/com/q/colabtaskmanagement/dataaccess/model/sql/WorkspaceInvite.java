@@ -12,7 +12,7 @@ import java.util.UUID;
 @Data
 public class WorkspaceInvite {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
     private UUID workspaceId;
@@ -22,7 +22,7 @@ public class WorkspaceInvite {
     @CreationTimestamp
     private Instant invitedAt = Instant.now();
 
-    private Instant expiresAt;
+    private Instant expiresAt = Instant.now().plus(7, ChronoUnit.DAYS);
 
     private boolean accepted = false;
     private boolean expired = false;
