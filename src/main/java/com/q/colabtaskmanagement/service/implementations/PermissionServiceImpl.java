@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.UUID;
 
 @Service
-public class PermissionService {
+public classPermissionService {
 
     private final BoardMemberRepository boardMemberRepository;
     private final WorkspaceMemberRepository workspaceMemberRepository;
@@ -34,7 +34,7 @@ public class PermissionService {
                 .orElseThrow(() -> new ForbiddenException("You don't have access to this workspace"));
     }
 
-    public boolean assertWorkspaceRoles(UUID workspaceId, UUID userId, WorkspaceRole... allowedRoles) {
+    public boolean hasWorkspaceRoles(UUID workspaceId, UUID userId, WorkspaceRole... allowedRoles) {
         WorkspaceRole userWorkspaceRole = getWorkspaceRole(workspaceId, userId);
         for (WorkspaceRole allowedRole : allowedRoles) {
             if (allowedRole == userWorkspaceRole) {
@@ -44,16 +44,16 @@ public class PermissionService {
         return false;
     }
 
-    public boolean assertWorkspaceAdmin(UUID workspaceId, UUID userId) {
-        return assertWorkspaceRoles(workspaceId, userId, WorkspaceRole.ADMIN);
+    public boolean isWorkspaceAdmin(UUID workspaceId, UUID userId) {
+        return hasWorkspaceRoles(workspaceId, userId, WorkspaceRole.ADMIN);
     }
 
     // Check if user is either MEMBER or ADMIN of the workspace not guest
     public boolean isWorkspaceMember(UUID workspaceId, UUID userId) {
-        return assertWorkspaceRoles(workspaceId, userId, WorkspaceRole.MEMBER, WorkspaceRole.ADMIN);
+        return hasWorkspaceRoles(workspaceId, userId, WorkspaceRole.MEMBER, WorkspaceRole.ADMIN);
     }
 
-    public boolean assertNotLastWorkspaceAdmin(UUID workspaceId) {
+    public boolean isNotLastWorkspaceAdmin(UUID workspaceId) {
         return workspaceMemberRepository.countByIdWorkspaceIdAndRole(workspaceId, WorkspaceRole.ADMIN) > 1;
     }
 
@@ -65,7 +65,7 @@ public class PermissionService {
     }
 
 
-    public boolean assertBoardRoles(UUID boardId, UUID userId, BoardRole... allowedRoles) {
+    public boolean isBoardRoles(UUID boardId, UUID userId, BoardRole... allowedRoles) {
         BoardRole userBoardRole = getBoardRole(boardId, userId);
         for (BoardRole allowedRole : allowedRoles) {
             if (allowedRole == userBoardRole) {
@@ -75,15 +75,15 @@ public class PermissionService {
         return false;
     }
 
-    public boolean assertBoardAdmin(UUID boardId, UUID userId) {
-        return assertBoardRoles(boardId, userId, BoardRole.ADMIN);
+    public boolean isBoardAdmin(UUID boardId, UUID userId) {
+        return isBoardRoles(boardId, userId, BoardRole.ADMIN);
     }
 
     public boolean isBoardMember(UUID boardId, UUID userId) {
-        return assertBoardRoles(boardId, userId, BoardRole.MEMBER, BoardRole.ADMIN, BoardRole.OBSERVER);
+        return isBoardRoles(boardId, userId, BoardRole.MEMBER, BoardRole.ADMIN, BoardRole.OBSERVER);
     }
 
-    public boolean assertNotLastBoardAdmin(UUID boardId) {
+    public boolean isNotLastBoardAdmin(UUID boardId) {
         return boardMemberRepository.countByIdBoardIdAndRole(boardId, BoardRole.ADMIN) > 1;
     }
 
@@ -102,7 +102,7 @@ public class PermissionService {
         if (board.getVisibility() == BoardVisibility.PUBLIC) {
             return true;
         }
-        return assertBoardRoles(boardId, userId, BoardRole.MEMBER, BoardRole.ADMIN);
+        return isBoardRoles(boardId, userId, BoardRole.MEMBER, BoardRole.ADMIN);
     }
 
 }
